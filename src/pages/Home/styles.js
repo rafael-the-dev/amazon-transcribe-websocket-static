@@ -34,6 +34,23 @@ export const useClasses = makeStyles(theme => ({
         fontWeight: 400,
         lineHeight: 1.6
     },
+    error: {
+        backgroundColor: '#FFD2D2',
+        borderRadius: 5,
+        color: '#D8000C',
+        display: 'none',
+        fontSize: '1.5em',
+        padding: '1.4rem 24px',
+        marginBottom: '1.4rem',
+        marginTop: '2rem'
+    },
+    errorDisplay: {
+        display: 'block !important'
+    },
+    errorMessage: {
+        lineHeight: '1.6rem',
+        marginTop: '1rem'
+    },
     form: {
         marginTop: '2rem'
     },

@@ -84,7 +84,7 @@ let streamAudioToWebSocket = function (userMediaStream) {
     wireSocketEvents();
 }
 
-function setLanguage() {
+function setLanguage() { //
     languageCode = $('#language').find(':selected').val();
     if (languageCode == "en-US" || languageCode == "es-US")
         sampleRate = 44100;
@@ -92,7 +92,7 @@ function setLanguage() {
         sampleRate = 8000;
 }
 
-function setRegion() {
+function setRegion() {  //
     region = $('#region').find(':selected').val();
 }
 
@@ -131,7 +131,7 @@ function wireSocketEvents() {
     };
 }
 
-let handleEventStreamMessage = function (messageJson) {
+let handleEventStreamMessage = function (messageJson) { //
     let results = messageJson.Transcript.Results;
 
     if (results.length > 0) {
@@ -155,7 +155,7 @@ let handleEventStreamMessage = function (messageJson) {
     }
 }
 
-let closeSocket = function () {
+let closeSocket = function () { //yes
     if (socket.readyState === socket.OPEN) {
         micStream.stop();
 
@@ -165,28 +165,30 @@ let closeSocket = function () {
         socket.send(emptyBuffer);
     }
 }
-
-$('#stop-button').click(function () {
+// ===========
+$('#stop-button').click(function () { //yes
     closeSocket();
     toggleStartStop();
 });
 
-$('#reset-button').click(function (){
+$('#reset-button').click(function (){ //yes
     $('#transcript').val('');
     transcription = '';
 });
 
-function toggleStartStop(disableStart = false) {
+// =====================
+
+function toggleStartStop(disableStart = false) { //yes
     $('#start-button').prop('disabled', disableStart);
     $('#stop-button').attr("disabled", !disableStart);
 }
 
-function showError(message) {
+function showError(message) { //yes
     $('#error').html('<i class="fa fa-times-circle"></i> ' + message);
     $('#error').show();
 }
 
-function convertAudioToBinaryMessage(audioChunk) {
+function convertAudioToBinaryMessage(audioChunk) { // yes
     let raw = mic.toRaw(audioChunk);
 
     if (raw == null)
@@ -203,9 +205,9 @@ function convertAudioToBinaryMessage(audioChunk) {
     let binary = eventStreamMarshaller.marshall(audioEventMessage);
 
     return binary;
-}
+};
 
-function getAudioEventMessage(buffer) {
+function getAudioEventMessage(buffer) {  //yes
     // wrap the audio data in a JSON envelope
     return {
         headers: {
@@ -222,7 +224,7 @@ function getAudioEventMessage(buffer) {
     };
 }
 
-function createPresignedUrl() {
+function createPresignedUrl() {  // yes
     let endpoint = "transcribestreaming." + region + ".amazonaws.com:8443";
 
     // get a preauthenticated URL that we can use to establish our WebSocket
@@ -242,3 +244,5 @@ function createPresignedUrl() {
         }
     );
 }
+
+
