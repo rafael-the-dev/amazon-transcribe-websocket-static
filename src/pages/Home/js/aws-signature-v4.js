@@ -100,7 +100,7 @@ exports.createPresignedURL = function(method, host, path, service, payload, opti
 };
 
 function toTime(time) {
-  return new Date(time).toISOString().replace(/[:\-]|\.\d{3}/g, '');
+  return new Date(time).toISOString().replace(/[:-]|\.\d{3}/g, '');
 }
 
 function toDate(time) {
