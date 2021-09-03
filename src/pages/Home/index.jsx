@@ -24,7 +24,7 @@ const Home = () => {
     const [ secretKey, setSecretKey ] = useState("");
     const [ sessionToken, setSessionToken ] = useState("");
 
-    const sampleRate = useRef(0);
+    const sampleRate = useRef(44100);
     const inputSampleRate = useRef(null);
     const transcription  = useRef("");;
     const socket = useRef(null);
@@ -155,7 +155,7 @@ const Home = () => {
             // the close event immediately follows the error event; only handle one.
             if (!socketError.current && !transcribeException.current) {
                 if (closeEvent.code !== 1000) {
-                    showError('</i><strong>Streaming Exception</strong><br>' + closeEvent.reason);
+                    showError(<><i><strong>Streaming Exception</strong><br/> {closeEvent.reason}</i></>);
                 }
                 toggleStartStop();
             }
@@ -178,7 +178,7 @@ const Home = () => {
                 // if this transcript segment is final, add it to the overall transcription
                 if (!results[0].IsPartial) {
                     //scroll the textarea down
-                    transcriptRef.current.scrollTop(transcriptRef.current.scrollHeight);
+                    transcriptRef.current.scrollTop = transcriptRef.current.scrollHeight;
     
                     transcription.current += transcript + "\n";
                 }
@@ -258,7 +258,6 @@ const Home = () => {
         setHasError(false) // hide any existing errors
         toggleStartStop(true); // disable start and enable stop button
 
-
         // first we get the microphone input from the browser (as a promise)...
         window.navigator.mediaDevices.getUserMedia({
                 video: false,
@@ -266,7 +265,7 @@ const Home = () => {
             })
             // ...then we convert the mic stream to binary event stream messages when the promise resolves 
             .then(streamAudioToWebSocket) 
-            .catch(error => {
+            .catch(() => {
                 showError('There was an error streaming your audio to Amazon Transcribe. Please try again.');
                 toggleStartStop();
             }
@@ -281,6 +280,10 @@ const Home = () => {
     const resetButtonClickHandler = () => {
         transcriptRef.current.value = '';
         transcription.current = '';
+        
+        setAccessID("");
+        setSecretKey("");
+        setSessionToken("");
     };
 
     const toggleStartStop = (disableStart = false) => {
@@ -303,7 +306,6 @@ const Home = () => {
         setLanguage(languageCode);
     };
 
-    const handleRegionChange = event => setRegion(event.target.value);
     const defaultOnChangleHandler = func => event => func(event.target.value);
 
     useEffect(() => {
@@ -341,7 +343,9 @@ const Home = () => {
                     id="error" 
                     className={classNames(classes.error, classes.isaError, { [classes.errorDisplay]: hasError })}>
                     <i className="fa fa-times-circle"></i>
-                    <Typography component="p" variant="body2" className={classNames(classes.errorMessage)}>{ message }</Typography>
+                    <Typography component="p" variant="body2" className={classNames(classes.errorMessage)}>
+                        { message }
+                    </Typography>
                 </Grid>
 
                 <Grid item container component="form" xs={12} className={classNames(classes.form)}>
@@ -390,7 +394,7 @@ const Home = () => {
                         fullWidth
                         label="Region"
                         value={region}
-                        onChange={handleRegionChange}
+                        onChange={defaultOnChangleHandler(setRegion)}
                         helperText="Please select your region"
                         variant="outlined"
                         className={classNames(classes.formInputContainer)}
