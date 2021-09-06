@@ -52,7 +52,11 @@ export const useClasses = makeStyles(theme => ({
         marginTop: '1rem'
     },
     form: {
-        marginTop: '2rem'
+        marginTop: '2rem',
+        '& .MuiInputBase-input': {
+            fontSize: '.9rem !Important',
+            textOverflow: 'ellipsis'
+        }
     },
     formInputContainer: {
         marginBottom: '1rem'

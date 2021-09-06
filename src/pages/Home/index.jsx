@@ -1,8 +1,9 @@
 import { Button, ButtonGroup, Grid, MenuItem, TextField, Typography, Paper } from "@material-ui/core";
 import amazonLogo from '../../assets/images/AWS_logo_RGB.png'
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useClasses } from "./styles";
 import classNames from "classnames";
+import poolId from '../../private/poolID.json';
 
 
 const audioUtils        = require('./js/audioUtils');  // for encoding audio data as PCM
@@ -11,6 +12,7 @@ const v4                = require('./js/aws-signature-v4'); // to generate our p
 const marshaller        = require("@aws-sdk/eventstream-marshaller"); // for converting binary event stream messages to and from JSON
 const util_utf8_node    = require("@aws-sdk/util-utf8-node"); // utilities for encoding and decoding UTF8
 const mic               = require('microphone-stream'); // collect microphone input as a stream of raw bytes
+const AWS               = require('aws-sdk');
 
 const Home = () => {
     const classes = useClasses();
@@ -317,7 +319,45 @@ const Home = () => {
             // maintain enabled/distabled state for the start and stop buttons
             toggleStartStop();
         }
-    }, [ ])
+    }, [ ]);
+
+    const credentialsRef = useRef(null);
+
+    const createCredentials = useCallback(async () => { 
+        // create new credentials
+        AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+            IdentityPoolId: poolId.identityPoolId 
+        }, { region: poolId.region });
+
+        // Gets the existing credentials, refreshing them if they are not yet loaded
+        AWS.config.credentials.get(function(err) {
+            if (err) console.log(err);
+            else {
+                const { AccessKeyId, SecretKey, SessionToken } = AWS.config.credentials.data.Credentials;
+                setSecretKey(SecretKey);
+                setAccessID(AccessKeyId);
+                setSessionToken(SessionToken);
+            }
+        });
+    }, [  ]);
+
+    const refreshCredentials = useCallback(async () => {
+        const result = await AWS.config.credentials.refreshPromise();
+        if(result) {
+            console.log(3, result)
+            credentialsRef.current = result;
+        }
+
+        // schedule the next credential refresh when they're about to expire
+        setTimeout(refreshCredentials, AWS.config.credentials.expireTime - new Date());
+    }, [ ]);
+       
+
+    useEffect(() => {
+        createCredentials()
+        refreshCredentials();
+    }, [ createCredentials, refreshCredentials ]);
+
 
     return (
         <>
