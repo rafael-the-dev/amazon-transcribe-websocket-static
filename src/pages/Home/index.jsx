@@ -267,9 +267,10 @@ const Home = () => {
             })
             // ...then we convert the mic stream to binary event stream messages when the promise resolves 
             .then(streamAudioToWebSocket) 
-            .catch(() => {
+            .catch(error => {
                 showError('There was an error streaming your audio to Amazon Transcribe. Please try again.');
                 toggleStartStop();
+                console.error(error)
             }
         );
     };
@@ -310,6 +311,36 @@ const Home = () => {
 
     const defaultOnChangleHandler = func => event => func(event.target.value);
 
+    const setCredentials = useCallback(() => {
+        // Gets the existing credentials, refreshing them if they are not yet loaded
+        AWS.config.credentials.get(function(err) {
+            if (err) console.error(err);
+            else {
+                const { AccessKeyId, SecretKey, SessionToken } = AWS.config.credentials.data.Credentials;
+                setSecretKey(SecretKey);
+                setAccessID(AccessKeyId);
+                setSessionToken(SessionToken);
+            }
+        });
+    }, [ ]);
+
+    const createCredentials = useCallback(async () => { 
+        // create new credentials
+        AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+            IdentityPoolId: poolId.identityPoolId 
+        }, { region: poolId.region });
+
+        setCredentials()
+    }, [ setCredentials ]);
+
+    const refreshCredentials = useCallback(async () => {
+        await AWS.config.credentials.refreshPromise();
+        setCredentials();
+
+        // schedule the next credential refresh when they're about to expire
+        setTimeout(refreshCredentials, AWS.config.credentials.expireTime - new Date());
+    }, [ setCredentials ]);
+
     useEffect(() => {
         eventStreamMarshaller.current = new marshaller.EventStreamMarshaller(util_utf8_node.toUtf8, util_utf8_node.fromUtf8);
         if (!window.navigator.mediaDevices.getUserMedia) {
@@ -320,38 +351,6 @@ const Home = () => {
             toggleStartStop();
         }
     }, [ ]);
-
-    const credentialsRef = useRef(null);
-
-    const createCredentials = useCallback(async () => { 
-        // create new credentials
-        AWS.config.credentials = new AWS.CognitoIdentityCredentials({
-            IdentityPoolId: poolId.identityPoolId 
-        }, { region: poolId.region });
-
-        // Gets the existing credentials, refreshing them if they are not yet loaded
-        AWS.config.credentials.get(function(err) {
-            if (err) console.log(err);
-            else {
-                const { AccessKeyId, SecretKey, SessionToken } = AWS.config.credentials.data.Credentials;
-                setSecretKey(SecretKey);
-                setAccessID(AccessKeyId);
-                setSessionToken(SessionToken);
-            }
-        });
-    }, [  ]);
-
-    const refreshCredentials = useCallback(async () => {
-        const result = await AWS.config.credentials.refreshPromise();
-        if(result) {
-            console.log(3, result)
-            credentialsRef.current = result;
-        }
-
-        // schedule the next credential refresh when they're about to expire
-        setTimeout(refreshCredentials, AWS.config.credentials.expireTime - new Date());
-    }, [ ]);
-       
 
     useEffect(() => {
         createCredentials()
