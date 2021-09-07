@@ -166,14 +166,13 @@ const Home = () => {
 
     const handleEventStreamMessage = messageJson => {
         let results = messageJson.Transcript.Results;
-    
         if (results.length > 0) {
             if (results[0].Alternatives.length > 0) {
                 let transcript = results[0].Alternatives[0].Transcript;
-    
+                
                 // fix encoding for accented characters
                 transcript = decodeURIComponent(escape(transcript));
-    
+
                 // update the textarea with the latest result
                 transcriptRef.current.value = transcription.current + transcript + "\n";
     
@@ -204,9 +203,9 @@ const Home = () => {
     
         if (raw == null)
             return;
-    
+        
         // downsample and convert the raw audio bytes to PCM
-        let downsampledBuffer = audioUtils.downsampleBuffer(raw, inputSampleRate.current, sampleRate);
+        let downsampledBuffer = audioUtils.downsampleBuffer(raw, inputSampleRate.current, sampleRate.current);
         let pcmEncodedBuffer = audioUtils.pcmEncode(downsampledBuffer);
     
         // add the right JSON headers and structure to the message
@@ -283,10 +282,6 @@ const Home = () => {
     const resetButtonClickHandler = () => {
         transcriptRef.current.value = '';
         transcription.current = '';
-        
-        setAccessID("");
-        setSecretKey("");
-        setSessionToken("");
     };
 
     const toggleStartStop = (disableStart = false) => {
@@ -445,10 +440,10 @@ const Home = () => {
                         ))}
                     </TextField>
                     <TextField 
-                        ref={transcriptRef}
+                        inputRef={transcriptRef}
                         fullWidth 
                         multiline 
-                        minRows={4} 
+                        minRows={6} 
                         variant="outlined" 
                         inputProps={{ readOnly: true }}
                         placeholder="Press Start and speak into your mic"
